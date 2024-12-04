@@ -7,9 +7,16 @@
 int main() {
     char *input = NULL;
     size_t size = 0;
+    char *username=getenv("USER");
 
     while (1) {
-        printf(":$ "); 
+        if(username){
+            printf("%s:$",username);
+        }
+        else
+        {
+            printf(":$");
+        }
 
         if (getline(&input, &size, stdin) == -1) {
             perror("Error reading input");
