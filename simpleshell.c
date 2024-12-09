@@ -8,6 +8,12 @@ int main() {
     char *input = NULL;
     size_t size = 0;
     char *username = getenv("USER");
+    const char *history_file = ".history";
+    FILE *history = fopen(history_file, "a");
+    if (!history) {
+        perror("Error opening history file");
+        return 1;
+    }
 
     while (1) {
         if (username) {
@@ -19,10 +25,11 @@ int main() {
         if (getline(&input, &size, stdin) == -1) {
             perror("Error reading input");
             free(input);
+            fclose(history);
             return 1;
         }
 
-        input[strcspn(input, "\n")] = '\0'; 
+        input[strcspn(input, "\n")] = '\0';
         if (input[0] == '~') {
             char *home = getenv("HOME");
             if (home) {
@@ -36,11 +43,12 @@ int main() {
             }
         }
 
+        fprintf(history, "%s\n", input);
+        fflush(history);
         if (strcmp(input, "exit") == 0) {
             printf("Exiting shell.\n");
             break;
         }
-
         char *args[100];
         char *token = strtok(input, " ");
         int i = 0;
@@ -56,7 +64,6 @@ int main() {
             perror("Error creating process");
         } else if (pid == 0) {
             char path[200];
-
             snprintf(path, sizeof(path), "./bin/%s", args[0]);
 
             if (execvp(path, args) == -1) {
@@ -70,6 +77,7 @@ int main() {
     }
 
     free(input);
+    fclose(history);
     return 0;
 }
 
