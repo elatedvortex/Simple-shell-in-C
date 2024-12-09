@@ -57,7 +57,7 @@ int main() {
         } else if (pid == 0) {
             char path[200];
 
-            snprintf(path, sizeof(path), "./%s", args[0]);
+            snprintf(path, sizeof(path), "./bin/%s", args[0]);
 
             if (execvp(path, args) == -1) {
                 perror("Error executing command");
