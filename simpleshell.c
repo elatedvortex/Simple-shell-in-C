@@ -7,9 +7,14 @@
 int main() {
     char *input = NULL;
     size_t size = 0;
+    char *username = getenv("USER");
 
     while (1) {
-        printf(":$ "); 
+        if (username) {
+            printf("%s:$ ", username);
+        } else {
+            printf(":$ ");
+        }
 
         if (getline(&input, &size, stdin) == -1) {
             perror("Error reading input");
@@ -17,12 +22,25 @@ int main() {
             return 1;
         }
 
-        input[strcspn(input, "\n")] = '\0';
+        input[strcspn(input, "\n")] = '\0'; 
+        if (input[0] == '~') {
+            char *home = getenv("HOME");
+            if (home) {
+                char *new_input = malloc(strlen(home) + strlen(input));
+                if (new_input) {
+                    strcpy(new_input, home);
+                    strcat(new_input, input + 1); 
+                    free(input);
+                    input = new_input;
+                }
+            }
+        }
 
         if (strcmp(input, "exit") == 0) {
             printf("Exiting shell.\n");
             break;
         }
+
         char *args[100];
         char *token = strtok(input, " ");
         int i = 0;
@@ -44,7 +62,7 @@ int main() {
             if (execvp(path, args) == -1) {
                 perror("Error executing command");
             }
-            exit(1); 
+            exit(1);
         } else {
             int status;
             waitpid(pid, &status, 0);
